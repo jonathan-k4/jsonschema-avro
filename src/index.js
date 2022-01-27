@@ -98,13 +98,16 @@ jsonSchemaAvro._convertArrayProperty = (name, contents) => {
 		doc: contents.description || '',
 		type: {
 			type: 'array',
+			default: contents.default || undefined,
 			items: jsonSchemaAvro._isComplex(contents.items)
 				? {
 					type: 'record',
 					name: `${name}_record`,
 					fields: jsonSchemaAvro._convertProperties(contents.items.properties, contents.items.required)
 				}
-				: jsonSchemaAvro._convertProperty(name, contents.items)
+				: jsonSchemaAvro._hasEnum(contents.items)
+				? jsonSchemaAvro._convertEnumProperty(name, contents.items).type
+				: jsonSchemaAvro._convertProperty(name, contents.items, true)
 		}
 	}
 }
@@ -144,8 +147,6 @@ jsonSchemaAvro._convertProperty = (name, value, isRequired = false) => {
 	}
 	if(Array.isArray(value.type)){
 		types = types.concat(value.type.filter(type => type !== 'null').map(type => typeMapping[type]))
-	} else if(jsonSchemaAvro._hasEnum(value)){
-		types = jsonSchemaAvro._convertEnumProperty(name, value);
 	} else{
 		types.push(typeMapping[value.type])
 	}
