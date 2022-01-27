@@ -144,8 +144,9 @@ jsonSchemaAvro._convertProperty = (name, value, isRequired = false) => {
 	}
 	if(Array.isArray(value.type)){
 		types = types.concat(value.type.filter(type => type !== 'null').map(type => typeMapping[type]))
-	}
-	else{
+	} else if(jsonSchemaAvro._hasEnum(value)){
+		types = jsonSchemaAvro._convertEnumProperty(name, value);
+	} else{
 		types.push(typeMapping[value.type])
 	}
 	//console.log('types', types)
